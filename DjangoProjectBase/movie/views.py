@@ -123,3 +123,74 @@ def generate_bar_chart(data, xlabel, ylabel):
     buffer.close()
     graphic = base64.b64encode(image_png).decode('utf-8')
     return graphic
+
+# ---------------- RECOMMENDATION SYSTEM ----------------
+
+import numpy as np
+import os
+from openai import OpenAI
+from dotenv import load_dotenv
+
+load_dotenv('key2_1.env')
+
+client = OpenAI(api_key=os.getenv("openai_apikey"))
+
+
+def get_embedding(text):
+
+    response = client.embeddings.create(
+
+        input=[text],
+
+        model="text-embedding-3-small"
+
+    )
+
+    return np.array(response.data[0].embedding, dtype=np.float32)
+
+
+
+def cosine_similarity(a, b):
+
+    return np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b))
+
+
+
+def recommendation_view(request):
+
+    recommendation = None
+
+    if request.method == "POST":
+
+        prompt = request.POST.get("prompt")
+
+        prompt_emb = get_embedding(prompt)
+
+        best_movie = None
+        best_score = -1
+
+        for movie in Movie.objects.all():
+
+            if not movie.description:
+                continue
+
+            movie_emb = get_embedding(movie.description)
+
+            score = cosine_similarity(prompt_emb, movie_emb)
+
+            if score > best_score:
+
+                best_score = score
+                best_movie = movie
+
+        recommendation = best_movie
+
+    return render(
+
+        request,
+
+        'recommendation.html',
+
+        {'recommendation': recommendation}
+
+    ) 

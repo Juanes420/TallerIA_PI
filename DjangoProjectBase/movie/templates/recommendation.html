@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="container">
+
+<h1>Movie Recommendation</h1>
+
+<form method="post">
+
+{% csrf_token %}
+
+<input type="text" name="prompt" class="form-control" placeholder="Ej: comedy movie">
+
+<br>
+
+<button type="submit" class="btn btn-primary">
+Search
+</button>
+
+</form>
+
+
+{% if recommendation %}
+
+<h2>{{ recommendation.title }}</h2>
+
+<img src="{{ recommendation.image.url }}" width="300">
+
+<p>{{ recommendation.description }}</p>
+
+{% endif %}
+
+</div>
+
+{% endblock %}
